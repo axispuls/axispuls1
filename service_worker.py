@@ -376,6 +376,7 @@ def run_service_loop():
     last_report_epoch = time.time()
     last_folder_check = 0.0
     last_lic_log = 0.0
+    last_alert_check = 0.0
     FOLDER_CHECK_INTERVAL = 3.0  # seconds between fast folder checks
     retry_after_epoch = 0.0      # backoff for retrying if sending failed
 
@@ -411,6 +412,15 @@ def run_service_loop():
         while True:
             now = time.time()
             config = load_config()
+
+            # License alert notifications (risk warnings during trial & post-expiration)
+            if now - last_alert_check >= 60:
+                try:
+                    from core.license_notifier import check_and_send_license_alerts
+                    check_and_send_license_alerts()
+                except Exception:
+                    pass
+                last_alert_check = now
 
             # 0. License Verification
             lic_ok, lic_msg, _ = is_license_active()

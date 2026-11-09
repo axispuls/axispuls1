@@ -120,7 +120,7 @@ def get_admin_reply_keyboard() -> Dict[str, Any]:
             [{"text": "⭐ فعال‌سازی ۱ ساله"}, {"text": "💎 فعال‌سازی ۱۰ ساله"}],
             [{"text": "🎁 فعال‌سازی ۷۲ ساعته"}, {"text": "⏳ تمدید ۳۰ روزه"}],
             [{"text": "📤 ارسال آخرین نسخه"}, {"text": "📋 آخرین لاگ‌ها"}],
-            [{"text": "👥 لیست کاربران"}]
+            [{"text": "👥 لیست کاربران"}, {"text": "🔄 ریست کامل سشن"}]
         ],
         "resize_keyboard": True
     }
@@ -146,7 +146,8 @@ def get_admin_inline_keyboard() -> Dict[str, Any]:
                 {"text": "📋 لاگ‌های اخیر", "callback_data": "cmd_logs"}
             ],
             [
-                {"text": "👥 لیست کاربران", "callback_data": "cmd_users"}
+                {"text": "👥 لیست کاربران", "callback_data": "cmd_users"},
+                {"text": "🔄 ریست سشن (شروع از صفر)", "callback_data": "cmd_reset_session"}
             ]
         ]
     }
@@ -252,6 +253,7 @@ class BaleBotListener:
                     "cmd_download_current_exe": "/send_setup_to_me",
                     "cmd_logs": "/logs",
                     "cmd_users": "/users",
+                    "cmd_reset_session": "/reset",
                     "cmd_menu": "/start"
                 }
                 text_cmd = cmd_map.get(data, "/start")
@@ -555,6 +557,21 @@ class BaleBotListener:
 
         if cmd_lower in ("/send_setup_to_me", "/get_setup", "دریافت ستاپ"):
             self._handle_admin_send_setup_to_me(user_id)
+            return
+
+        # I. Reset Session (Wipes license, session, and returns software to initial install state)
+        if cmd_lower in ("/reset", "/reset_session", "ریست", "ریست سشن", "ریست کامل سشن", "🔄 ریست کامل سشن"):
+            from .license_manager import reset_software_session
+            ok, msg = reset_software_session()
+            if ok:
+                resp = (
+                    "🔄 **سشن و دیتای نرم‌افزار کلاینت با موفقیت ریست شد!**\n\n"
+                    "• تمامی مجوزها، اطلاعات سشن، هشدارهای انقضا و سوابق پاک شدند.\n"
+                    "• این نرم‌افزار هم‌اکنون به حالت اولیه (روز اول نصب) بازگشته و در اجرای بعدی، از کاربر درخواست فعال‌سازی خواهد کرد."
+                )
+            else:
+                resp = f"⚠️ خطا در ریست سشن: {msg}"
+            send_message(self.bot_token, str(user_id), resp, reply_markup=get_admin_reply_keyboard())
             return
 
         # Default fallback for admin
