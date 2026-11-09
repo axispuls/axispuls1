@@ -1,10 +1,17 @@
-# Python artifacts
+# Python Source Code & Build Scripts (NEVER COMMIT CODE TO GIT)
+*.py
+core/
+tests/
+سناریو/
+build/
+dist/
 __pycache__/
 *.py[cod]
 *$py.class
 *.spec
-build/
-dist/
+*.bat
+requirements.txt
+app_icon.ico
 .pytest_cache/
 
 # Local sensitive configs & credentials
